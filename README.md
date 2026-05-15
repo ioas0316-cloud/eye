@@ -49,7 +49,11 @@
 
 ---
 
-## 🛠️ 5. 사용 설명서 (Quick Start Guide)
+## 🛠️ 5. 활용 가이드 및 사용 설명서 (Application Guide)
+
+본 프로젝트는 단순한 시각화를 넘어, 추출된 결정체를 다시 지식 그래프나 LLM 가중치로 변환하는 하이브리드 생태계를 지향합니다. 상세한 활용 방법은 [APPLICATION_GUIDE.md](./APPLICATION_GUIDE.md)를 참조하십시오.
+
+### **구조적 원리 (Architecture)**
 
 ```mermaid
 graph TD
