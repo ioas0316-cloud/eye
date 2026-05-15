@@ -34,7 +34,7 @@ class WaveTrajectoryGenerator:
         Now supports dynamic scaling and Fractal Recursion.
         """
         if depth > 1:
-            print(f"Expanding Fractal Core: Depth {depth}, Base Rotors {num_rotors}")
+            pass # Keep quiet during deep recursion
         else:
             print(f"Distributing {num_rotors} Phase Rotors on a spherical surface...")
 
@@ -44,10 +44,20 @@ class WaveTrajectoryGenerator:
             flat_w = weights.flatten()
 
         energies = np.abs(flat_w)
+        # Ensure num_rotors is not more than energies length
+        num_rotors = min(num_rotors, len(energies))
+        if num_rotors <= 0: return []
+
         chunks = np.array_split(energies, num_rotors)
         rotors = []
 
         phi = np.pi * (3. - np.sqrt(5.))
+
+        # Entropy-based expansion threshold
+        def calculate_entropy(data):
+            if len(data) <= 1: return 0
+            # Simple entropy proxy: std normalized by mean
+            return np.std(data) / (np.mean(data) + 1e-6)
 
         for i in range(num_rotors):
             y = 1 - (i / float(num_rotors - 1)) * 2 if num_rotors > 1 else 0
@@ -60,14 +70,17 @@ class WaveTrajectoryGenerator:
             chunk = chunks[i]
             if len(chunk) == 0: continue
 
-            # Fractal Expansion: If data is too complex, split this rotor into sub-rotors
-            # For demonstration, we use a simple std threshold
-            if depth < 3 and np.std(chunk) > 0.5:
+            entropy = calculate_entropy(chunk)
+
+            # Fractal Expansion: If entropy is high, split this rotor to capture more "texture"
+            if depth < 2 and entropy > 1.2: # Threshold for expansion
+                # Sub-split into 9 sub-rotors
                 sub_rotors = self.map_to_spherical_rotors(chunk, num_rotors=9, depth=depth+1)
                 rotors.append({
                     "id": f"{depth}_{i}",
                     "pos": pos.tolist(),
                     "type": "FractalCluster",
+                    "entropy": float(entropy),
                     "sub_rotors": sub_rotors
                 })
             else:
@@ -80,6 +93,7 @@ class WaveTrajectoryGenerator:
                     "id": f"{depth}_{i}",
                     "pos": pos.tolist(),
                     "type": "AtomicRotor",
+                    "entropy": float(entropy),
                     "params": {
                         "amp": float(amplitude),
                         "freq": float(frequency),
@@ -89,6 +103,24 @@ class WaveTrajectoryGenerator:
                 })
 
         return rotors
+
+    def suggest_optimal_rotor_scale(self, weights):
+        """
+        Analyzes the weight distribution and suggests the best rotor count.
+        """
+        if isinstance(weights, torch.Tensor):
+            w = weights.flatten().detach().cpu().numpy()
+        else:
+            w = weights.flatten()
+
+        complexity = np.std(w) / (np.mean(np.abs(w)) + 1e-6)
+
+        if complexity < 0.5:
+            return 27, "Basic (Quiet Resonance)"
+        elif complexity < 1.5:
+            return 108, "Medium (Active Resonance)"
+        else:
+            return 432, "High (Intense Fractal Resonance)"
 
 if __name__ == "__main__":
     gen = WaveTrajectoryGenerator()

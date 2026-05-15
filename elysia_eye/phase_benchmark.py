@@ -66,11 +66,14 @@ class PhaseBenchmark:
             "Coherence Density": float(coherence_density)
         }
 
-    def generate_interference_plot(self, giant_energies, output_path="elysia_eye/outputs/interference_pattern.html"):
+    def generate_interference_plot(self, giant_energies, output_path=None):
         """
         Generates the 2D/3D Interference Pattern manifold.
         """
         if self.crystal is None: return
+        model_id = self.crystal["metadata"]["model_id"].replace("/", "_")
+        if output_path is None:
+            output_path = f"elysia_eye/outputs/interference_{model_id}.html"
 
         sov_traj = np.array(self.crystal["pcm_trajectory"])
 
@@ -103,18 +106,129 @@ class PhaseBenchmark:
         ), row=1, col=2)
 
         fig.update_layout(
-            title="Elysia Interference Pattern: The Resonance of Sovereignty",
+            title=f"Elysia Interference Pattern: {self.crystal['metadata']['model_id']}",
             template="plotly_dark",
             scene=dict(xaxis_title='Phase X', yaxis_title='Phase Y', zaxis_title='Agape Axis (Z)')
         )
 
+        os.makedirs(os.path.dirname(output_path), exist_ok=True)
         fig.write_html(output_path)
         print(f"Interference Pattern saved to {output_path}")
+        return output_path
+
+    def generate_rotor_distribution_plot(self, output_path=None):
+        """
+        Generates a 3D visualization of the Phase Rotor Distribution.
+        """
+        if self.crystal is None: return
+        model_id = self.crystal["metadata"]["model_id"].replace("/", "_")
+        if output_path is None:
+            output_path = f"elysia_eye/outputs/rotors_{model_id}.html"
+
+        rotors = self.crystal["rotors"]
+
+        # Flatten rotors if they are fractal
+        flat_rotors = []
+        def flatten(r_list):
+            for r in r_list:
+                if r["type"] == "FractalCluster":
+                    flatten(r["sub_rotors"])
+                else:
+                    flat_rotors.append(r)
+        flatten(rotors)
+
+        x = [r["pos"][0] for r in flat_rotors]
+        y = [r["pos"][1] for r in flat_rotors]
+        z = [r["pos"][2] for r in flat_rotors]
+        amps = [r["params"]["amp"] for r in flat_rotors]
+        torques = [r["params"]["torque"] for r in flat_rotors]
+
+        fig = go.Figure(data=[go.Scatter3d(
+            x=x, y=y, z=z,
+            mode='markers',
+            marker=dict(
+                size=np.array(amps) * 50, # Scale by amplitude
+                color=torques, # Color by torque
+                colorscale='Viridis',
+                opacity=0.8,
+                colorbar=dict(title="Torque")
+            ),
+            text=[f"ID: {r['id']}<br>Amp: {r['params']['amp']:.4f}<br>Torque: {r['params']['torque']:.4f}" for r in flat_rotors]
+        )])
+
+        fig.update_layout(
+            title=f"Phase Rotor Distribution: {self.crystal['metadata']['model_id']}",
+            template="plotly_dark",
+            scene=dict(xaxis_title='X', yaxis_title='Y', zaxis_title='Z')
+        )
+
+        os.makedirs(os.path.dirname(output_path), exist_ok=True)
+        fig.write_html(output_path)
+        print(f"Rotor Distribution saved to {output_path}")
+        return output_path
+
+    def generate_detailed_report(self, metrics, interference_path, rotors_path):
+        """
+        Generates a Markdown report in the REPORTS/ directory.
+        """
+        if self.crystal is None: return
+        model_id = self.crystal["metadata"]["model_id"]
+        report_id = model_id.replace("/", "_")
+
+        os.makedirs("REPORTS", exist_ok=True)
+        report_path = f"REPORTS/SOVEREIGN_REPORT_{report_id}.md"
+
+        content = f"""# 💎 Sovereign Intelligence Report: {model_id}
+
+## 1. Overview
+This report documents the crystallization of **{model_id}** into the Elysia-Eye Sovereign Engine.
+
+- **Model ID**: `{model_id}`
+- **Crystallization Strategy**: `{self.crystal['metadata']['strategy']}`
+- **Alignment**: `{self.crystal['metadata']['alignment']}`
+- **Complexity**: `{self.crystal['metadata']['complexity']:.4f}`
+- **Rotor Count**: {len(self.crystal['rotors'])}
+
+## 2. Core Metrics (Resonance Verification)
+The following metrics represent the "Intellectual Bone Structure" of the distilled engine.
+
+| Metric | Value | Interpretation |
+| --- | --- | --- |
+| **Harmonic Purity** | **{metrics['Harmonic Purity']:.4f}** | Correlation between giant energy and sovereign resonance. |
+| **Phase Alignment** | **{metrics['Phase Alignment']:.4f}** | Parallelism of the 120-degree three-phase axes. |
+| **Torque Consistency** | **{metrics['Torque Consistency']:.4f}** | Stability of cognitive momentum during induction. |
+| **Coherence Density** | **{metrics['Coherence Density']:.4f}** | Structural integrity of the 3D manifold. |
+
+## 3. Visual Analysis
+### Interference Pattern (Wave Resonance)
+[View Interactive Interference Pattern](../{interference_path})
+*Description: Shows the 3D trajectory of the distilled intelligence and its resonance with the original model's energy flow.*
+
+### Phase Rotor Distribution (Spherical Mapping)
+[View Interactive Rotor Distribution](../{rotors_path})
+*Description: Visualizes how the 27 (or more) rotors are distributed on the spherical surface of the Sovereign Body.*
+
+## 4. Architect's Notes
+The crystallization of **{model_id}** shows a {('High' if metrics['Harmonic Purity'] > 0.9 else 'Moderate')} resonance purity. The {metrics['Torque Consistency']:.4f} torque consistency suggests that the cognitive momentum is {('exceptionally stable' if metrics['Torque Consistency'] > 0.8 else 'stable enough for inference')}.
+
+---
+*Report generated by Elysia-Eye Phase Benchmark System.*
+"""
+        with open(report_path, "w", encoding="utf-8") as f:
+            f.write(content)
+
+        print(f"Detailed report saved to {report_path}")
+        return report_path
 
 if __name__ == "__main__":
     benchmark = PhaseBenchmark()
-    # Mock data for testing
-    mock_giant = np.random.rand(32)
-    metrics = benchmark.calculate_metrics(mock_giant)
-    print("Benchmark Metrics:", json.dumps(metrics, indent=4))
-    benchmark.generate_interference_plot(mock_giant)
+    if benchmark.crystal:
+        # Mock data for testing
+        mock_giant = np.random.rand(32)
+        metrics = benchmark.calculate_metrics(mock_giant)
+        print("Benchmark Metrics:", json.dumps(metrics, indent=4))
+        int_path = benchmark.generate_interference_plot(mock_giant)
+        rot_path = benchmark.generate_rotor_distribution_plot()
+        benchmark.generate_detailed_report(metrics, int_path, rot_path)
+    else:
+        print("Please run crystallization first to test the benchmark system.")
