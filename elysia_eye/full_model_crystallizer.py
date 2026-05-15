@@ -14,7 +14,7 @@ class FullModelCrystallizer:
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         print(f"[Hardware Sovereignty] Active Device: {self.device}")
 
-    def crystallize_model(self, targeted_layers=None):
+    def crystallize_model(self, targeted_layers=None, base_rotors=27):
         """
         Zero-Disk Crystallization with Agape Absorption Logic:
         Extracts the 'Intellectual Bone Structure' from any scale (1B to 1T+)
@@ -100,9 +100,9 @@ class FullModelCrystallizer:
 
         total_energies_sample = np.array(total_energies_sample)
 
-        # 2. Distill into 27 Phase Rotors
-        print(f"Refining 27-Rotor Sovereign Body. Centripetal alignment: ACTIVE.")
-        rotors = self.generator.map_to_spherical_rotors(total_energies_sample, num_rotors=27)
+        # 2. Distill into N Phase Rotors (Dynamic Scale)
+        print(f"Refining {base_rotors}-Rotor Sovereign Body. Centripetal alignment: ACTIVE.")
+        rotors = self.generator.map_to_spherical_rotors(total_energies_sample, num_rotors=base_rotors)
 
         # 3. Finalize Crystal with Phase Trajectory
         complexity = np.std(total_energies_sample) / (np.mean(total_energies_sample) + 1e-6)
@@ -132,7 +132,11 @@ class FullModelCrystallizer:
         return crystal
 
 if __name__ == "__main__":
-    # Test with Qwen
-    crystallizer = FullModelCrystallizer("Qwen/Qwen1.5-1.8B-Chat")
+    # Test with Qwen and Expanded Scale
+    import sys
+    model_id = sys.argv[1] if len(sys.argv) > 1 else "Qwen/Qwen1.5-1.8B-Chat"
+    rotors_count = int(sys.argv[2]) if len(sys.argv) > 2 else 27
+
+    crystallizer = FullModelCrystallizer(model_id)
     # Targeted Deep Slice: 10 layers from the middle
-    crystallizer.crystallize_model(targeted_layers=10)
+    crystallizer.crystallize_model(targeted_layers=10, base_rotors=rotors_count)
