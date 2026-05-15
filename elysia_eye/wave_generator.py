@@ -42,23 +42,58 @@ class WaveTrajectoryGenerator:
 
         return np.array(points)
 
-    def map_to_fractal_nodes(self, weights):
+    def map_to_spherical_rotors(self, weights, num_rotors=27):
         """
-        Maps high-dim weights to 3x3x3 fractal nodes based on energy density.
-        For simplicity in this first version, we'll partition the weights into 27 groups
-        and calculate energy density for each.
+        Maps high-dim weights to N rotors distributed on a sphere.
+        This ensures equal distance from the origin (Love X).
         """
+        print(f"Distributing {num_rotors} Phase Rotors on a spherical surface...")
+
         # Flatten and calculate magnitude
-        flat_w = weights.flatten().cpu().numpy()
+        if isinstance(weights, torch.Tensor):
+            flat_w = weights.flatten().detach().cpu().numpy()
+        else:
+            flat_w = weights.flatten()
+
         energies = np.abs(flat_w)
+        chunks = np.array_split(energies, num_rotors)
 
-        # Sort or partition into 27 chunks
-        chunks = np.array_split(energies, 27)
-        node_energies = [np.mean(c) for c in chunks]
+        rotors = []
 
-        # Reshape to 3x3x3
-        fractal_grid = np.array(node_energies).reshape((3, 3, 3))
-        return fractal_grid
+        # Fibonacci Sphere Algorithm for equal distribution
+        phi = np.pi * (3. - np.sqrt(5.))  # golden angle in radians
+
+        for i in range(num_rotors):
+            y = 1 - (i / float(num_rotors - 1)) * 2  # y goes from 1 to -1
+            radius = np.sqrt(1 - y * y)  # radius at y
+
+            theta = phi * i  # golden angle increment
+
+            x = np.cos(theta) * radius
+            z = np.sin(theta) * radius
+
+            # Rotor position (x, y, z) on unit sphere
+            pos = np.array([x, y, z])
+
+            # Map chunk data to wave parameters
+            chunk = chunks[i]
+            amplitude = np.mean(chunk)
+            frequency = 1.0 + np.std(chunk)
+            phase = (np.mean(chunk) % (2 * np.pi))
+            torque = np.max(chunk) - np.min(chunk)
+
+            rotors.append({
+                "id": i,
+                "pos": pos.tolist(),
+                "params": {
+                    "amp": float(amplitude),
+                    "freq": float(frequency),
+                    "phi": float(phase),
+                    "torque": float(torque)
+                }
+            })
+
+        return rotors
 
 if __name__ == "__main__":
     gen = WaveTrajectoryGenerator()

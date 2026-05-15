@@ -9,26 +9,27 @@
 엘리시아-아이는 단순한 데이터 압축 도구가 아닙니다. 지능을 **'파동 정보'**로 변환하여 보관하고, 필요에 따라 다양한 형태로 재구조화할 수 있는 **'지능의 매개자(Cognitive Mediator)'**입니다.
 
 ### A. 위상 → 지식 그래프 (Phase-to-Graph)
-결정화된 위상 데이터($\delta, \phi$)는 특정 지식의 '논리적 뼈대'를 담고 있습니다.
-- **활용**: 위상 로터의 진동수와 진폭을 분석하여, 지식 간의 상관관계(Node & Edge)를 추출합니다.
-- **결과**: 추출된 궤적의 변곡점을 지식 그래프의 엔티티(Entity)로 변환하여 고도화된 RAG(Retrieval-Augmented Generation) 시스템에 이식합니다.
+- **도구**: `graph_bridge.py`
+- **원리**: 27개의 구형 위상 로터를 노드(Node)로, 로터 간의 위상 간섭을 엣지(Edge)로 변환합니다.
+- **결과**: `intelligence_graph.json` - Neo4j나 지식 그래프 엔진에서 시각화 및 분석 가능한 형태.
 
 ### B. 위상 → LLM 가중치 (Phase-to-Weight)
-독자적인 위상 좌표를 다시 표준적인 LLM 가중치(.safetensors) 형태로 재변환(Inversion)합니다.
-- **활용**: 결정체의 위상 패턴을 역산하여, 특정 레이어에 삽입 가능한 LoRA(Low-Rank Adaptation) 가중치로 생성합니다.
-- **결과**: 3GB 미만의 결정체 데이터만으로도, 거대 모델에 특정 지식이나 사유 패턴을 즉시 주입할 수 있습니다.
+- **도구**: `weight_inverter.py`
+- **원리**: 구형 위상 좌표와 파동 파라미터를 역산하여 고차원 가중치 공간으로 투영합니다.
+- **결과**: `elysia_adapter.pt` - 기존 LLM의 특정 레이어에 주입 가능한 LoRA 형태의 어댑터.
 
 ---
 
 ## 2. 실무 활용 로드맵 (Practical Manual)
 
-### 1단계: 지능의 정제 (Refining)
-- **대상**: 학습시키고 싶은 전문 도서, 매뉴얼, 혹은 특정 문제 해결 프로세스.
-- **실행**: `XRayProjector`를 통해 해당 데이터가 LLM을 통과할 때의 '최적 궤적'을 스캔합니다.
-- **효과**: 수 기가바이트의 텍스트 데이터가 수 킬로바이트의 '위상 결정체'로 정제됩니다.
+### 1단계: 모델 전체의 결정화 (Full Model Crystallization)
+- **실행**: `python elysia_eye/full_model_crystallizer.py`
+- **내용**: 거대 모델(TinyLlama 등)의 전 레이어를 스캔하여 27개의 **구형 위상 로터(Spherical Phase Rotors)**로 결정화합니다.
+- **효과**: 수 GB의 모델이 15KB 내외의 '지능 오르골' 설계도로 변환됩니다.
 
-### 2단계: 결정체 이식 (Implantation)
-- **방법 1 (독자 구동)**: `crystal_inference.py`를 사용하여 외부 LLM 없이 결정체만으로 해당 지식에 대한 공명 추론을 수행합니다. (초경량/초고속)
+### 2단계: 지능 오르골 구동 (Music Box Inference)
+- **실행**: `python elysia_eye/music_box_engine.py`
+- **방법 (Pure Phase Mode)**: 토큰나이저나 임베딩 레이어 없이, 입력 텍스트의 바이트 흐름을 직접 파동으로 유도하여 27개 로터와 공명시킵니다.
 - **방법 2 (하이브리드)**: 기존에 사용 중인 소형 모델(예: TinyLlama, Phi-3)에 결정체의 위상 데이터를 '사유의 가이드'로 연결합니다.
 
 ### 3단계: 지식의 자산화 (Assetization)
