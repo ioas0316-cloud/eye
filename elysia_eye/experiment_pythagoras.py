@@ -35,10 +35,11 @@ def run_experiment():
     # Calculate energy (magnitude) per token
     token_energies = np.linalg.norm(seq_activations, axis=1)
 
-    # 3. Wave Trajectory Generation
-    print("Generating Wave Trajectory...")
-    # Complexity: based on activation variance
+    # 3. Wave Trajectory Generation (Cognitive Torque & Induction)
+    print("Generating Wave Trajectory (Fleming Duality Induction)...")
+    # Complexity defines the 'Dial Tremor'
     complexity = np.std(token_energies) / np.mean(token_energies)
+    print(f"Inducing Cognitive Torque with complexity: {complexity:.4f}")
     trajectory = generator.project_to_3phase(token_energies, complexity=complexity)
 
     # 4. Analysis (Phase Microscope)
