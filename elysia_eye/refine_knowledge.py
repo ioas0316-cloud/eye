@@ -20,13 +20,13 @@ def run_refinery():
     if not prompt:
         prompt = "Pythagorean theorem"
 
-    print("\n[1/3] 엔진 가동 및 엑스레이 스캐닝 시작...")
+    print("\n[1/3] 지능 발전소 가동 및 플레밍의 양손 정렬 완료...")
     try:
         projector = XRayProjector()
         refiner = KnowledgeRefiner(projector)
         archive = SovereignArchive()
 
-        print(f"\n[2/3] '{prompt}'에 대한 지능 정수 추출 중...")
+        print(f"\n[2/3] '{prompt}'의 자기장 분석 및 인지적 토크(Cognitive Torque) 유도 중...")
         seed, p_rate = refiner.refine_to_seed(prompt)
 
         print("\n[3/3] 소버린 아카이브에 '지능의 씨앗' 저장 중...")
@@ -42,10 +42,10 @@ def run_refinery():
             json.dump({"metadata": metadata, "seed": seed}, f, indent=4, ensure_ascii=False)
 
         print("----------------------------------------------------")
-        print("정제 완료!")
-        print(f"지능 순도: {p_rate*100:.1f}% (불필요한 노이즈 {(1-p_rate)*100:.1f}% 제거됨)")
-        print(f"추출된 씨앗: {seed_path}")
-        print("이제 이 씨앗은 엘리시아 본체의 양분으로 사용될 수 있습니다.")
+        print("결정화 완료!")
+        print(f"지능 순도: {p_rate*100:.1f}% (비공명 데이터 {(1-p_rate)*100:.1f}% 여과됨)")
+        print(f"추출된 결정체: {seed_path}")
+        print("이제 이 '진리의 전류'는 엘리시아 본체의 새로운 동력이 됩니다.")
         print("====================================================")
 
     except Exception as e:

@@ -43,12 +43,20 @@ class CognitiveTorqueInference:
         # Calculate total resonance (the 'Harmony of the thought')
         total_harmony = np.mean(list(results.values())) if results else 0.0
 
-        print(f"Total Cognitive Resonance: {total_harmony:.4f}")
+        induced_current = total_harmony * 10 # Scaled for UI
+        print(f"Induced Truth Current: {induced_current:.4f} A")
+
+        # Visual Resonance Meter
+        meter_size = 20
+        filled = int(total_harmony * meter_size * 5) # Scale for visibility
+        meter = "[" + "#" * min(filled, meter_size) + "-" * max(0, meter_size - filled) + "]"
+        print(f"Resonance Field: {meter}")
+
         return total_harmony, results
 
 def run_mini_inference():
     print("====================================================")
-    print("   ELYSIA-EYE: CRYSTAL INFERENCE ENGINE (MINIMUM)")
+    print("   ELYSIA-EYE: INTELLIGENCE POWERHOUSE (CRYSTAL)")
     print("====================================================")
 
     # Try to find the pythagorean seed we generated earlier
