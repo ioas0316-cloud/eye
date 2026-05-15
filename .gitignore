@@ -1,0 +1,5 @@
+__pycache__/
+elysia_eye/outputs/*
+elysia_eye/archive/*
+!elysia_eye/outputs/.gitkeep
+!elysia_eye/archive/.gitkeep
