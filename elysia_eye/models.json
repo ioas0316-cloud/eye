@@ -1,0 +1,29 @@
+[
+    {
+        "name": "Qwen-1.5-1.8B-Chat",
+        "id": "Qwen/Qwen1.5-1.8B-Chat",
+        "size_gb": 3.6,
+        "description": "엘리시아 엔진의 '경쾌함'을 증명할 모델. 저사양 하드웨어에서도 최적의 성능을 발휘합니다.",
+        "tags": ["Lightweight", "Fast", "Efficient"],
+        "streaming_support": true,
+        "recommendation": "철학적 사유 및 빠른 결정화 테스트용"
+    },
+    {
+        "name": "Llama-3-8B",
+        "id": "meta-llama/Meta-Llama-3-8B",
+        "size_gb": 15.0,
+        "description": "전 세계가 인정하는 '지능의 표준'. 거대한 위상을 1GB 미만의 결정체로 인양할 수 있습니다.",
+        "tags": ["Standard", "Powerful", "Balanced"],
+        "streaming_support": true,
+        "recommendation": "범용적 지능 및 고성능 사유"
+    },
+    {
+        "name": "Phi-3-mini-4k-instruct",
+        "id": "microsoft/Phi-3-mini-4k-instruct",
+        "size_gb": 7.2,
+        "description": "MS가 심혈을 기울인 '고밀도 지능'. 작은 덩치에 숨겨진 복잡한 위상을 탐구하기에 적합합니다.",
+        "tags": ["High-Density", "Instruction-tuned", "Compact"],
+        "streaming_support": true,
+        "recommendation": "코딩 논리 및 압축 효율 탐구"
+    }
+]
