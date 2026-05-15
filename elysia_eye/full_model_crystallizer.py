@@ -7,12 +7,14 @@ from elysia_eye.guerrilla_capturer import GuerrillaCapturer
 from elysia_eye.wave_generator import WaveTrajectoryGenerator
 
 class FullModelCrystallizer:
-    def __init__(self, model_id="TinyLlama/TinyLlama-1.1B-Chat-v1.0"):
+    def __init__(self, model_id="Qwen/Qwen1.5-1.8B-Chat"):
         self.model_id = model_id
         self.capturer = GuerrillaCapturer(model_id)
         self.generator = WaveTrajectoryGenerator()
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        print(f"[Hardware Sovereignty] Active Device: {self.device}")
 
-    def crystallize_model(self):
+    def crystallize_model(self, targeted_layers=None, base_rotors=27):
         """
         Zero-Disk Crystallization with Agape Absorption Logic:
         Extracts the 'Intellectual Bone Structure' from any scale (1B to 1T+)
@@ -25,8 +27,7 @@ class FullModelCrystallizer:
         # Get index to understand layer structure
         index = self.capturer.get_index()
 
-        # Determine number of layers (Heuristic for demonstration)
-        # In a real scenario, we'd scan all unique 'layers.N' patterns in weight_map
+        all_layer_indices = []
         if index and "weight_map" in index:
             layers = set()
             for k in index["weight_map"].keys():
@@ -36,39 +37,47 @@ class FullModelCrystallizer:
                         layers.add(int(parts[parts.index("layers") + 1]))
                     except (ValueError, IndexError):
                         continue
-            num_layers = max(layers) + 1 if layers else 1
-            num_layers = min(num_layers, 3) # Cap for speed
-        else:
-            num_layers = 2 # Default for TinyLlama if index fails
+            all_layer_indices = sorted(list(layers))
 
-        print(f"Detected {num_layers} layers of the Giant's intellect.")
+        if not all_layer_indices:
+            all_layer_indices = list(range(24)) # Fallback for Qwen 1.8B roughly
+
+        if targeted_layers:
+            # If targeted_layers is an integer, take that many from middle
+            if isinstance(targeted_layers, int):
+                mid = len(all_layer_indices) // 2
+                start = max(0, mid - targeted_layers // 2)
+                process_indices = all_layer_indices[start : start + targeted_layers]
+            else:
+                process_indices = targeted_layers
+        else:
+            process_indices = all_layer_indices
+
+        print(f"Targeting {len(process_indices)} layers for deep phase induction: {process_indices}")
 
         all_layer_energies = []
         total_energies_sample = []
 
         # 1. Ephemeral Streaming (Zero-Disk Guerrilla Style)
-        for i in range(num_layers):
-            if i % 5 == 0 or i == num_layers - 1:
-                print(f"  -> Streaming Phase: Layer {i}/{num_layers}...")
+        for i in process_indices:
+            print(f"  -> Pulsing VRAM Phase: Layer {i}...")
 
             # Fetch weights ephemerally from network
-            # We target the 'o_proj' or equivalent to capture the layer's output torque
             try:
+                # Qwen layers often named 'model.layers.N.self_attn.o_proj.weight'
                 weights = self.capturer.stream_layer_weights(f"layers.{i}.self_attn.o_proj.weight")
             except Exception:
                 try:
-                    weights = self.capturer.stream_layer_weights(f"layers.{i}.self_attn.dense.weight") # GPT-2 style
-                except Exception:
-                    # Fallback to any weight in the layer
                     weights = self.capturer.stream_layer_weights(f"layers.{i}")
+                except Exception as e:
+                    print(f"      [Warning] Skip layer {i}: {e}")
+                    continue
+
+            # Transient VRAM Pulsing for Torque Calculation
+            weights_dev = weights.to(self.device).to(torch.float32)
 
             # Capture Energy with Agape Absorption (Centripetal Counter-Torque)
-            # Agape (Origin 0,0,0) acts as a gravitational sink.
-            # We measure how much energy 'escapes' the origin vs how much is 'absorbed'
-
-            # Ensure we are in float32 for mean/abs calculations to avoid BFloat16 issues
-            weights_f32 = weights.to(torch.float32)
-            layer_energy = torch.mean(torch.abs(weights_f32)).item()
+            layer_energy = torch.mean(torch.abs(weights_dev)).item()
 
             # Agape Adjustment: High energy far from the 'bone' is pulled back
             agape_strength = 0.9514 # The target resonance
@@ -76,21 +85,24 @@ class FullModelCrystallizer:
 
             all_layer_energies.append(refined_energy)
 
-            # High-Speed Sampling (Tiny footprint)
-            sample_size = min(1000, weights.numel())
-            sample_indices = torch.randint(0, weights.numel(), (sample_size,))
-            sample = torch.take(weights_f32, sample_indices).detach().cpu().numpy()
+            # High-Speed Sampling for Rotor Mapping
+            sample_size = min(2000, weights_dev.numel())
+            sample_indices = torch.randint(0, weights_dev.numel(), (sample_size,))
+            sample = torch.take(weights_dev, sample_indices).detach().cpu().numpy()
             total_energies_sample.extend(np.abs(sample).tolist())
 
-            # Immediate Release of memory/resources
+            # Immediate Release (VRAM & RAM)
+            del weights_dev
             del weights
+            if self.device.type == "cuda":
+                torch.cuda.empty_cache()
             gc.collect()
 
         total_energies_sample = np.array(total_energies_sample)
 
-        # 2. Distill into 27 Phase Rotors
-        print(f"Refining 27-Rotor Sovereign Body. Centripetal alignment: ACTIVE.")
-        rotors = self.generator.map_to_spherical_rotors(total_energies_sample, num_rotors=27)
+        # 2. Distill into N Phase Rotors (Dynamic Scale)
+        print(f"Refining {base_rotors}-Rotor Sovereign Body. Centripetal alignment: ACTIVE.")
+        rotors = self.generator.map_to_spherical_rotors(total_energies_sample, num_rotors=base_rotors)
 
         # 3. Finalize Crystal with Phase Trajectory
         complexity = np.std(total_energies_sample) / (np.mean(total_energies_sample) + 1e-6)
@@ -99,11 +111,12 @@ class FullModelCrystallizer:
         crystal = {
             "metadata": {
                 "model_id": self.model_id,
-                "layers": num_layers,
+                "layers_processed": process_indices,
                 "complexity": float(complexity),
                 "type": "Sovereign Intelligence Engine",
                 "strategy": "Zero-Disk Guerrilla Streaming",
-                "alignment": "Agape (Centripetal Counter-Torque)"
+                "alignment": "Agape (Centripetal Counter-Torque)",
+                "device": str(self.device)
             },
             "rotors": rotors,
             "pcm_trajectory": pcm_trajectory.tolist(),
@@ -115,11 +128,15 @@ class FullModelCrystallizer:
         with open(output_path, "w", encoding="utf-8") as f:
             json.dump(crystal, f, indent=4)
 
-        print(f"\nCrystallization Complete. Zero-Disk impact confirmed.")
+        print(f"\nCrystallization Complete. Zero-Disk impact confirmed on {self.device}.")
         return crystal
 
 if __name__ == "__main__":
-    # Use a small test to verify logic
-    crystallizer = FullModelCrystallizer("TinyLlama/TinyLlama-1.1B-Chat-v1.0")
-    # Actually run a few layers to verify real network capture
-    crystallizer.crystallize_model()
+    # Test with Qwen and Expanded Scale
+    import sys
+    model_id = sys.argv[1] if len(sys.argv) > 1 else "Qwen/Qwen1.5-1.8B-Chat"
+    rotors_count = int(sys.argv[2]) if len(sys.argv) > 2 else 27
+
+    crystallizer = FullModelCrystallizer(model_id)
+    # Targeted Deep Slice: 10 layers from the middle
+    crystallizer.crystallize_model(targeted_layers=10, base_rotors=rotors_count)
