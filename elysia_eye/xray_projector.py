@@ -3,9 +3,23 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 
 class XRayProjector:
     def __init__(self, model_id="TinyLlama/TinyLlama-1.1B-Chat-v1.0"):
-        print(f"Loading model: {model_id}...")
+        print(f"Loading model: {model_id} (Hardware Optimization: 3GB Mode)...")
         self.tokenizer = AutoTokenizer.from_pretrained(model_id)
-        self.model = AutoModelForCausalLM.from_pretrained(model_id, torch_dtype=torch.float32, device_map="cpu")
+        # Use float16 to fit in 3GB VRAM. low_cpu_mem_usage is key for old hardware.
+        try:
+            self.model = AutoModelForCausalLM.from_pretrained(
+                model_id,
+                torch_dtype=torch.float16,
+                low_cpu_mem_usage=True,
+                device_map="auto"
+            )
+        except Exception as e:
+            print(f"Auto device map failed, falling back to CPU float16: {e}")
+            self.model = AutoModelForCausalLM.from_pretrained(
+                model_id,
+                torch_dtype=torch.float16,
+                low_cpu_mem_usage=True
+            )
         self.model.eval()
         print("Model loaded successfully.")
 
