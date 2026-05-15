@@ -132,11 +132,56 @@ class FullModelCrystallizer:
         return crystal
 
 if __name__ == "__main__":
-    # Test with Qwen and Expanded Scale
+    # Interactive Mode or CLI arguments
     import sys
-    model_id = sys.argv[1] if len(sys.argv) > 1 else "Qwen/Qwen1.5-1.8B-Chat"
-    rotors_count = int(sys.argv[2]) if len(sys.argv) > 2 else 27
+    from elysia_eye.sovereign_selector import SovereignSelector
+    from elysia_eye.journal_manager import JournalManager
 
-    crystallizer = FullModelCrystallizer(model_id)
-    # Targeted Deep Slice: 10 layers from the middle
-    crystallizer.crystallize_model(targeted_layers=10, base_rotors=rotors_count)
+    if len(sys.argv) > 1:
+        model_id = sys.argv[1]
+        rotors_count = int(sys.argv[2]) if len(sys.argv) > 2 else 27
+        crystallizer = FullModelCrystallizer(model_id)
+        crystal = crystallizer.crystallize_model(targeted_layers=10, base_rotors=rotors_count)
+
+        # Log to journal
+        journal = JournalManager()
+        journal.add_entry(model_id, {"rotors": rotors_count, "layers": crystal['metadata']['layers_processed']},
+                          {"complexity": crystal['metadata']['complexity']})
+    else:
+        # Launch Sovereign Selector
+        selector = SovereignSelector()
+        selector.list_models()
+
+        choice = input("\n인양할 모델 번호를 선택하세요 (또는 'add [ID]', 'update' 입력): ")
+
+        if choice.startswith("add "):
+            selector.add_model_by_id(choice.split(" ")[1])
+        elif choice == "update":
+            selector.fetch_trending()
+        else:
+            try:
+                idx = int(choice) - 1
+                model = selector.models[idx]
+
+                # Setup configuration
+                rotors = input("로터 개수를 설정하세요 (기본 27): ")
+                rotors = int(rotors) if rotors else 27
+
+                layers = input("결정화할 레이어 수를 설정하세요 (기본 10): ")
+                layers = int(layers) if layers else 10
+
+                selector.show_report(idx, rotors=rotors, layers=layers)
+                confirm = input().lower()
+
+                if confirm == 'y':
+                    crystallizer = FullModelCrystallizer(model['id'])
+                    crystal = crystallizer.crystallize_model(targeted_layers=layers, base_rotors=rotors)
+
+                    # Log to journal
+                    journal = JournalManager()
+                    journal.add_entry(model['id'], {"rotors": rotors, "layers": crystal['metadata']['layers_processed']},
+                                      {"complexity": crystal['metadata']['complexity']})
+                else:
+                    print("Crystallization cancelled.")
+            except (ValueError, IndexError):
+                print("Invalid input.")
